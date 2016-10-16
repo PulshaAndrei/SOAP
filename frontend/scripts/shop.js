@@ -1,5 +1,16 @@
-angular.module('shop', []).
-  config(function($routeProvider) {
+angular.module('shop', ['angularSoap'])
+
+  .factory("networkService", ['$soap', function($soap){
+    var base_url = "http://localhost:36845/Service1.svc?wsdl";
+
+    return {
+        GetShops: function(){
+            return $soap.post(base_url,"GetShops");
+        }
+    }
+  }])
+
+  .config(function($routeProvider) {
     $routeProvider.
       when('/', {controller: ShopListCtrl, templateUrl: 'list_shop.html'}).
       when('/new_shop', {controller: CreateShopCtrl, templateUrl: 'edit_shop.html'}).
@@ -12,15 +23,21 @@ angular.module('shop', []).
       otherwise({redirectTo:'/'});
   });
  
-function init($scope, $rootScope, $http) {
-  $http.get('data/shops.json').success(function(data) {
-    $rootScope.shops = data;
+function init($scope, $rootScope, $http, networkService) {
+  networkService.GetShops().then(function(shops){
+    $rootScope.shops = []
+    for(i=0;i<shops.length;i++){
+        console.log(shops[i]);
+    }
   });
+  /*$http.get('data/shops.json').success(function(data) {
+    $rootScope.shops = data;
+  });*/
 }
 
 
-function ShopListCtrl($scope, $rootScope, $location, $http) {
-  if (!$rootScope.shops) init($scope, $rootScope, $http);
+function ShopListCtrl($scope, $rootScope, $location, $http, networkService) {
+  if (!$rootScope.shops) init($scope, $rootScope, $http, networkService);
 
   //Draggable
   $(function() {
