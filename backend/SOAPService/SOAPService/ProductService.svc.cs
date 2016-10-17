@@ -14,6 +14,8 @@ namespace SOAPService
         JavaScriptSerializer json = new JavaScriptSerializer();
         String path = @"D:\Products.txt";
 
+        public void OptionsRequest() { }
+
         private List<Product> GetAllProducts()
         {
             string text = System.IO.File.ReadAllText(path);

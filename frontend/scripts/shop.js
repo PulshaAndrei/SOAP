@@ -63,9 +63,14 @@ function DestroyShopCtrl($scope, $location, $rootScope, $routeParams, $http){
 
 
 
-function ProductsCtrl($scope, $location, $rootScope, $routeParams){
+function ProductsCtrl($scope, $location, $rootScope, $routeParams, $http){
   if (!$rootScope.shops) { $location.path('/'); return; };
-  $scope.shop = $rootScope.shops[$routeParams.shopId - 1];
+  var index = $rootScope.shops.findIndex(function(el){ return el.Id == $routeParams.shopId });
+  $scope.shop = clone($rootScope.shops[index]);
+
+  $http.get('http://localhost/SOAPService/ProductService.svc/json/Products?shopId='+$scope.shop.Id).success(function(data) {
+    $rootScope.products = data;
+  }); 
 
   //Maps
   var geocoder = new google.maps.Geocoder();
@@ -87,35 +92,39 @@ function ProductsCtrl($scope, $location, $rootScope, $routeParams){
 
 }
 
-function CreateProductCtrl($scope, $location, $rootScope, $routeParams){
+function CreateProductCtrl($scope, $location, $rootScope, $routeParams, $http){
   if (!$rootScope.shops) { $location.path('/'); return; };
-  $scope.shop = $rootScope.shops[$routeParams.shopId - 1];
+  var index = $rootScope.shops.findIndex(function(el){ return el.Id == $routeParams.shopId });
+  $scope.shop = clone($rootScope.shops[index]);
 
   $scope.save = function(){
-    $scope.product.id = $rootScope.shops[$routeParams.shopId - 1].products.length + 1;
-    $rootScope.shops[$routeParams.shopId - 1].products.push($scope.product);
-    $location.path("/products/"+$scope.shop.id);
+    $http.post('http://localhost/SOAPService/ProductService.svc/json/Products?shopId='+$scope.shop.Id+'&name='+$scope.product.Name+'&description='+$scope.product.Description).success(function(data) {
+      $rootScope.products.push(data);
+      $location.path("/products/"+$scope.shop.Id);
+    });
   }
 }
 
-function EditProductCtrl($scope, $location, $rootScope, $routeParams){
+function EditProductCtrl($scope, $location, $rootScope, $routeParams, $http){
   if (!$rootScope.shops) { $location.path('/'); return; };
-  $scope.shop = clone($rootScope.shops[$routeParams.shopId - 1]);
-  $scope.product = clone($scope.shop.products[$routeParams.productId - 1]);
+  $scope.shop = clone($rootScope.shops[$rootScope.shops.findIndex(function(el){ return el.Id == $routeParams.shopId })]);
+  var index = $rootScope.products.findIndex(function(el){ return el.Id == $routeParams.productId });
+  $scope.product = clone($rootScope.products[index]);
 
   $scope.save = function(){
-    $scope.product.id = $routeParams.productId;
-    $rootScope.shops[$routeParams.shopId - 1].products[$routeParams.productId - 1] = $scope.product;
-    $location.path("/products/"+$scope.shop.id);
+    $http.put('http://localhost/SOAPService/ProductService.svc/json/Products?shopId='+$scope.shop.Id+'&id='+$scope.product.Id+'&name='+$scope.product.Name+'&description='+$scope.product.Description).success(function(data) {
+      $rootScope.products[index] = data;
+      $location.path("/products/"+$scope.shop.Id);
+    });
   }
 }
 
-function DestroyProductCtrl($scope, $location, $rootScope, $routeParams){
+function DestroyProductCtrl($scope, $location, $rootScope, $routeParams, $http){
   if (!$rootScope.shops) { $location.path('/'); return; };
-  $rootScope.shops[$routeParams.shopId - 1].products.splice($routeParams.productId - 1, 1);
-  $rootScope.shops[$routeParams.shopId - 1].products.forEach( function (elem, index) { 
-    if (elem.id > $routeParams.productId) 
-      $rootScope.shops[$routeParams.shopId - 1].products[index].id--;
+  $http.delete('http://localhost/SOAPService/ProductService.svc/json/Products?shopId='+$routeParams.shopId+'&id='+$routeParams.productId).success(function() {
+    $http.get('http://localhost/SOAPService/ProductService.svc/json/Products?shopId='+$routeParams.shopId).success(function(data) {
+      $rootScope.products = data;
+    });
+    $location.path("/products/"+$routeParams.shopId);
   });
-  $location.path("/products/"+$routeParams.shopId);
 }
