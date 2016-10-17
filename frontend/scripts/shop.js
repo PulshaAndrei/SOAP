@@ -74,19 +74,19 @@ function ProductsCtrl($scope, $location, $rootScope, $routeParams, $http){
 
   //Maps
   var geocoder = new google.maps.Geocoder();
-  geocoder.geocode( { 'address': $scope.shop.adress}, 
+  geocoder.geocode( { 'address': $scope.shop.Adress}, 
     function(results, status) {
       if (status == google.maps.GeocoderStatus.OK) {
           var pos = results[0].geometry.location;
           var map = new google.maps.Map(document.getElementById('map'), {
-            center: new google.maps.LatLng(pos.A, pos.F),
-            zoom: 15,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            zoom: 15
           });
-          var marker = new google.maps.Marker({
-            position: new google.maps.LatLng(pos.A, pos.F),
-            map: map
-          });
+          map.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+                map: map,
+                position: results[0].geometry.location
+            });
       }
     }); 
 
