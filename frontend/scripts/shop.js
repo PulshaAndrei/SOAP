@@ -13,11 +13,14 @@ angular.module('shop', [])
       otherwise({redirectTo:'/'});
   });
 
+function init($scope, $rootScope, $http) {
+  $http.get('http://localhost/SOAPService/ShopService.svc/json/Shops').success(function(data) {
+    $rootScope.shops = data;
+  });
+}
+
 function ShopListCtrl($scope, $rootScope, $location, $http) {
-  if (!$rootScope.shops) 
-    $http.get('http://localhost/SOAPService/ShopService.svc/json/Shops').success(function(data) {
-      $rootScope.shops = data;
-    });
+  if (!$rootScope.shops) init($scope, $rootScope, $http)
 }
  
 function CreateShopCtrl($scope, $location, $http, $rootScope) {
@@ -39,27 +42,23 @@ function clone(obj){
 
 function EditShopCtrl($scope, $location, $rootScope, $routeParams, $http) {
   if (!$rootScope.shops) { $location.path('/'); return; };
-  $scope.shop = clone($rootScope.shops[$routeParams.shopId - 1]);
+  var index = $rootScope.shops.findIndex(function(el){ return el.Id == $routeParams.shopId });
+  $scope.shop = clone($rootScope.shops[index]);
 
   $scope.save = function() {
     $http.put('http://localhost/SOAPService/ShopService.svc/json/Shops?id='+$scope.shop.Id+'&name='+$scope.shop.Name+'&time='+$scope.shop.Time+'&adress='+$scope.shop.Adress).success(function(data) {
-      $rootScope.shops[$routeParams.shopId - 1] = data;
+      $rootScope.shops[index] = data;
       $location.path('/');
     });
   };
 }
 
-function DestroyShopCtrl($scope, $location, $rootScope, $routeParams){
+function DestroyShopCtrl($scope, $location, $rootScope, $routeParams, $http){
   if (!$rootScope.shops) { $location.path('/'); return; };
-  var nextNum = $rootScope.shops[$routeParams.shopId - 1].num;
-  $rootScope.shops.splice($routeParams.shopId - 1, 1);
-  $rootScope.shops.forEach( function (elem, index) { 
-    if (elem.id > $routeParams.shopId) 
-      $rootScope.shops[index].id--;
-    if (elem.num >= nextNum) 
-      $rootScope.shops[index].num--;
+  $http.delete('http://localhost/SOAPService/ShopService.svc/json/Shops?id='+$routeParams.shopId).success(function() {
+    init($scope, $rootScope, $http)
+    $location.path('/');
   });
-  $location.path('/');
 }
 
 

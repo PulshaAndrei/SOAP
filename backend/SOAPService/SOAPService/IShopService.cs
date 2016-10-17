@@ -28,7 +28,7 @@ namespace SOAPService
         Shop UpdateShop(int id, string name, string time, string adress);
 
         [OperationContract]
-        [WebInvoke(Method = "DELETE")]
+        [WebInvoke(Method = "DELETE", UriTemplate = "Shops?id={id}")]
         void DeleteShop(int id);
     }
 
