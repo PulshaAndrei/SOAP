@@ -10,7 +10,7 @@ namespace SOAPService
 {
     // ПРИМЕЧАНИЕ. Команду "Переименовать" в меню "Рефакторинг" можно использовать для одновременного изменения имени класса "Service1" в коде, SVC-файле и файле конфигурации.
     // ПРИМЕЧАНИЕ. Чтобы запустить клиент проверки WCF для тестирования службы, выберите элементы Service1.svc или Service1.svc.cs в обозревателе решений и начните отладку.
-    public class Service1 : IService1
+    public class ShopService : IShopService
     {
         public Shop[] GetShops()
         {
@@ -25,22 +25,36 @@ namespace SOAPService
             shopsArray[1] = new Shop();
             return shopsArray;
         }
-        public string GetData(int value)
+
+        public Shop CreateShop(string name, string time, string adress)
         {
-            return string.Format("You entered: {0}", value);
+            Shop shop = new Shop();
+            shop.Id = GetShops().Last().Id + 1;
+            shop.Name = name;
+            shop.Adress = adress;
+            shop.Time = time;
+            shop.Neighbors = new Shop[0];
+
+            //TODO: DB create
+            return shop;
         }
 
-        /*public CompositeType GetDataUsingDataContract(CompositeType composite)
+        public Shop UpdateShop(int id, string name, string time, string adress)
         {
-            if (composite == null)
-            {
-                throw new ArgumentNullException("composite");
-            }
-            if (composite.BoolValue)
-            {
-                composite.StringValue += "Suffix";
-            }
-            return composite;
-        }*/
+            Shop shop = new Shop();
+            shop.Id = id;
+            shop.Name = name;
+            shop.Adress = adress;
+            shop.Time = time;
+            shop.Neighbors = new Shop[0];
+
+            //TODO: DB update
+            return shop;
+        }
+
+        public void DeleteShop(int id)
+        {
+            //TODO: DB delete
+        }
     }
 }
