@@ -12,7 +12,7 @@ namespace SOAPService
     public interface IProductService
     {
         [OperationContract]
-        Product[] GetProducts(int shopId);
+        List<Product> GetProducts(int shopId);
 
         [OperationContract]
         Product CreateProduct(int shopId, string name, string description);

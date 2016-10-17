@@ -12,7 +12,7 @@ namespace SOAPService
     public interface IShopService
     {
         [OperationContract]
-        Shop[] GetShops();
+        List<Shop> GetShops();
 
         [OperationContract]
         Shop CreateShop(string name, string time, string adress);

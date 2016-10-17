@@ -4,42 +4,62 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using System.Web.Script.Serialization;
+
 
 namespace SOAPService
 {
     public class ProductService : IProductService
     {
-        public Product[] GetProducts(int shopId)
+        JavaScriptSerializer json = new JavaScriptSerializer();
+        String path = @"D:\Products.txt";
+
+        private List<Product> GetAllProducts()
         {
-            return new Product[0];
+            string text = System.IO.File.ReadAllText(path);
+            List<Product> productsArray = json.Deserialize<List<Product>>(text);
+            return productsArray == null ? new Product[0].ToList() : productsArray;
         }
 
-        public Product CreateProduct(int shopId, int id, string name, string description)
+        public List<Product> GetProducts(int shopId)
         {
+            List<Product> productsArray = GetAllProducts();
+            return productsArray.Where(a => a.ShopId == shopId).ToList();
+        }
+
+        public Product CreateProduct(int shopId, string name, string description)
+        {
+            List<Product> products = GetAllProducts();
             Product product = new Product();
-            product.Id = GetProducts(shopId).Last().Id + 1;
+            List<Product> shopProducts = GetProducts(shopId);
+            product.ShopId = shopId;
+            product.Id = shopProducts.Count == 0 ? 1 : shopProducts.Last().Id + 1;
             product.Name = name;
             product.Description = description;
+            products.Add(product);
 
-            //TODO: DB create
+            System.IO.File.WriteAllText(path, json.Serialize(products));
+
             return product;
         }
 
         public Product UpdateProduct(int shopId, int id, string name, string description)
         {
-            Product product = new Product();
-            product.ShopId = shopId;
-            product.Id = id;
-            product.Name = name;
-            product.Description = description;
+            List<Product> products = GetAllProducts();
+            int index = products.FindIndex(a => a.Id == id && a.ShopId == shopId);
+            products[index].Name = name;
+            products[index].Description = description;
 
-            //TODO: DB update
-            return product;
+            System.IO.File.WriteAllText(path, json.Serialize(products));
+
+            return products[index];
         }
 
         public void DeleteProduct(int shopId, int id)
         {
-            //TODO: DB delete
+            List<Product> products = GetAllProducts();
+            products.RemoveAt(products.FindIndex(a => a.Id == id && a.ShopId == shopId));
+            System.IO.File.WriteAllText(path, json.Serialize(products));
         }
     }
 }
