@@ -1,14 +1,4 @@
-angular.module('shop', ['angularSoap'])
-
-  .factory("networkService", ['$soap', function($soap){
-    var base_url = "http://localhost:36845/Service1.svc?wsdl";
-
-    return {
-        GetShops: function(){
-            return $soap.post(base_url,"GetShops");
-        }
-    }
-  }])
+angular.module('shop', [])
 
   .config(function($routeProvider) {
     $routeProvider.
@@ -22,43 +12,12 @@ angular.module('shop', ['angularSoap'])
       when('/destroy_product/:shopId/:productId', {controller: DestroyProductCtrl, templateUrl: 'list_product.html'}).
       otherwise({redirectTo:'/'});
   });
- 
-function init($scope, $rootScope, $http, networkService) {
-  networkService.GetShops().then(function(shops){
-    $rootScope.shops = []
-    for(i=0;i<shops.length;i++){
-        console.log(shops[i]);
-    }
-  });
-  /*$http.get('data/shops.json').success(function(data) {
-    $rootScope.shops = data;
-  });*/
-}
 
-
-function ShopListCtrl($scope, $rootScope, $location, $http, networkService) {
-  if (!$rootScope.shops) init($scope, $rootScope, $http, networkService);
-
-  //Draggable
-  $(function() {
-    $( "#sortable" ).sortable({
-      revert: true,
-      update: function(){
-        var arr = $('#sortable').sortable("toArray");
-        var mas = [];
-        arr.forEach( function (elem, index) {
-          $rootScope.shops.forEach( function(el, i) {
-            if (el.num == parseInt(elem) && !mas[i]) {
-              $rootScope.shops[i].num = index + 1;
-              mas[i] = true;
-            }
-          });
-        });
-        window.location.replace('#/.');
-      }
+function ShopListCtrl($scope, $rootScope, $location, $http) {
+  if (!$rootScope.shops) 
+    $http.get('http://localhost/SOAPService/ShopService.svc/json/Shops').success(function(data) {
+      $rootScope.shops = data;
     });
-    $( "tbody, tr" ).disableSelection();
-  });
 }
  
 function CreateShopCtrl($scope, $location, $http, $rootScope) {
@@ -79,13 +38,19 @@ function clone(obj){
     return temp;
 }
 
-function EditShopCtrl($scope, $location, $rootScope, $routeParams) {
+function EditShopCtrl($scope, $location, $rootScope, $routeParams, $http) {
   if (!$rootScope.shops) { $location.path('/'); return; };  
+  console.log($routeParams)
   $scope.shop = clone($rootScope.shops[$routeParams.shopId - 1]);
 
   $scope.save = function() {
-    $rootScope.shops[$routeParams.shopId - 1] = $scope.shop;
-    $location.path('/');
+    $http.put('http://localhost/SOAPService/ShopService.svc/json/Shops?id='+$scope.shop.Id+
+        '&name='+$scope.shop.Name+
+        '&time='+$scope.shop.Time+
+        '&adress='+$scope.shop.Adress).success(function(data) {
+      $rootScope.shops[$routeParams.shopId - 1] = data;
+      $location.path('/');
+    });
   };
 }
 
