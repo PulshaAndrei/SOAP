@@ -23,12 +23,11 @@ function ShopListCtrl($scope, $rootScope, $location, $http) {
 function CreateShopCtrl($scope, $location, $http, $rootScope) {
   if (!$rootScope.shops) { $location.path('/'); return; };
   $scope.save = function() {
-    $scope.shop.id = $rootScope.shops.length + 1;
-    $scope.shop.num = $rootScope.shops.length + 1;
-    $scope.shop.products = [];
-    $rootScope.shops.push($scope.shop);
-    $location.path('/');
-  }
+    $http.post('http://localhost/SOAPService/ShopService.svc/json/Shops?name='+$scope.shop.Name+'&time='+$scope.shop.Time+'&adress='+$scope.shop.Adress).success(function(data) {
+      $rootScope.shops.push(data);
+      $location.path('/');
+    });
+  };
 }
 
 function clone(obj){
@@ -39,15 +38,11 @@ function clone(obj){
 }
 
 function EditShopCtrl($scope, $location, $rootScope, $routeParams, $http) {
-  if (!$rootScope.shops) { $location.path('/'); return; };  
-  console.log($routeParams)
+  if (!$rootScope.shops) { $location.path('/'); return; };
   $scope.shop = clone($rootScope.shops[$routeParams.shopId - 1]);
 
   $scope.save = function() {
-    $http.put('http://localhost/SOAPService/ShopService.svc/json/Shops?id='+$scope.shop.Id+
-        '&name='+$scope.shop.Name+
-        '&time='+$scope.shop.Time+
-        '&adress='+$scope.shop.Adress).success(function(data) {
+    $http.put('http://localhost/SOAPService/ShopService.svc/json/Shops?id='+$scope.shop.Id+'&name='+$scope.shop.Name+'&time='+$scope.shop.Time+'&adress='+$scope.shop.Adress).success(function(data) {
       $rootScope.shops[$routeParams.shopId - 1] = data;
       $location.path('/');
     });
